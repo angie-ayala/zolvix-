@@ -1,0 +1,90 @@
+<ion-menu contentId="main-content">
+  <ion-header>
+    <ion-toolbar color="dark">
+      <ion-title>Menu</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content class="ion-padding">
+    <ion-list>
+      <ion-item button><ion-icon name="home-outline"></ion-icon> Inicio</ion-item>
+      <ion-item button><ion-icon name="people"></ion-icon> Empleados</ion-item>
+      <ion-item button><ion-icon name="calculator"></ion-icon> Finanzas</ion-item>
+      <ion-item button><ion-icon name="briefcase"></ion-icon> Proyectos</ion-item>
+      <ion-item button><ion-icon name="heart"></ion-icon> Contacto</ion-item>
+    </ion-list>
+  </ion-content>
+</ion-menu>
+
+
+<div class="ion-page" id="main-content">
+  <ion-header>
+    <ion-toolbar color="dark">
+      <ion-buttons slot="start">
+        <ion-menu-button></ion-menu-button>
+      </ion-buttons>
+      <ion-title>
+        Empresa App
+      </ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-content class="ion-padding">
+    <h1>Bienvenido a Empresa App!</h1>
+    <img src="assets/img/empresa.jpg" alt="Imagen de empresa" style="width: 300px; height: auto; margin-bottom: 10px; border-radius: 28px;">
+
+    <p>
+      Esta aplicación está diseñada para ayudarte a gestionar tu empresa de manera eficiente. Aquí podrás encontrar
+      herramientas para administrar tus empleados, controlar tus finanzas, y mantener un seguimiento de tus proyectos.
+    </p>
+
+    <h2>Características principales:</h2>
+    <ul>
+      <li>Administración de empleados</li>
+      <li>Control de finanzas</li>
+      <li>Seguimiento de proyectos</li>
+    </ul>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Administración de empleados</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        Gestiona la información de tus empleados, asigna tareas y controla su desempeño.
+      </ion-card-content>
+    </ion-card>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Control de finanzas</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      Lleva un control detallado de tus ingresos y gastos, y genera reportes financieros para tu empresa.
+    </ion-card-content>
+  </ion-card>
+
+
+    <h3>Contacto</h3>
+    <p>
+      Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos a través de nuestro correo electrónico:
+      <a href="mailto:info@empresaapp.com">
+        info@empresaapp.com
+      </a>
+    </p>
+
+    <ion-button expand="block" color="primary">
+      <ion-icon name="logo-facebook"></ion-icon>
+      Facebook
+    </ion-button>
+        <ion-button expand="block" color="danger">
+      <ion-icon name="logo-instagram"></ion-icon>
+      Instagram
+    </ion-button>
+  </ion-content>
+
+  <ion-footer>
+    <ion-toolbar color="dark">
+      <ion-title>&copy; 2026 Empresa App. Todos los derechos reservados.</ion-title>
+    </ion-toolbar>
+  </ion-footer>
+
+</div>
