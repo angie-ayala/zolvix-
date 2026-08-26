@@ -1,0 +1,156 @@
+<ion-content class="register-content ion-padding">
+  <div class="register-container">
+
+    <!-- Encabezado / Branding -->
+    <div class="brand-header">
+      <div class="logo-wrapper">
+        <ion-icon name="person-add-outline" class="brand-icon"></ion-icon>
+      </div>
+      <h1 class="brand-title">Crear Cuenta</h1>
+      <p class="brand-subtitle">Únete a Empresa App y gestiona tu negocio.</p>
+    </div>
+
+    <!-- Tarjeta del Formulario -->
+    <ion-card class="register-card">
+      <ion-card-content>
+        <form [formGroup]="registerForm" (ngSubmit)="onRegister()">
+
+          <!-- Nombre Completo -->
+          <div class="input-group">
+            <ion-item lines="none" class="custom-input-item">
+              <ion-icon name="person-outline" slot="start" class="input-icon"></ion-icon>
+              <ion-input
+                formControlName="name"
+                type="text"
+                label="Nombre Completo"
+                labelPlacement="floating"
+                placeholder="Ej. Juan Pérez"
+                autocomplete="name"
+                required>
+              </ion-input>
+            </ion-item>
+            <div class="error-feedback" *ngIf="name?.invalid && (name?.dirty || name?.touched)">
+              <span *ngIf="name?.errors?.['required']">El nombre es obligatorio.</span>
+              <span *ngIf="name?.errors?.['minlength']">Debe tener al menos 3 caracteres.</span>
+            </div>
+          </div>
+
+          <!-- Correo Electrónico -->
+          <div class="input-group">
+            <ion-item lines="none" class="custom-input-item">
+              <ion-icon name="mail-outline" slot="start" class="input-icon"></ion-icon>
+              <ion-input
+                formControlName="email"
+                type="email"
+                label="Correo Electrónico"
+                labelPlacement="floating"
+                placeholder="ejemplo@correo.com"
+                autocomplete="email"
+                required>
+              </ion-input>
+            </ion-item>
+            <div class="error-feedback" *ngIf="email?.invalid && (email?.dirty || email?.touched)">
+              <span *ngIf="email?.errors?.['required']">El correo es obligatorio.</span>
+              <span *ngIf="email?.errors?.['email']">Ingresa un formato de correo válido.</span>
+            </div>
+          </div>
+
+          <!-- Teléfono / Celular (Opcional) -->
+          <div class="input-group">
+            <ion-item lines="none" class="custom-input-item">
+              <ion-icon name="call-outline" slot="start" class="input-icon"></ion-icon>
+              <ion-input
+                formControlName="phone"
+                type="tel"
+                label="Teléfono / Celular"
+                labelPlacement="floating"
+                placeholder="Ej. 3001234567"
+                autocomplete="tel">
+              </ion-input>
+            </ion-item>
+            <div class="error-feedback" *ngIf="phone?.invalid && (phone?.dirty || phone?.touched)">
+              <span *ngIf="phone?.errors?.['pattern']">Ingresa un número de teléfono válido.</span>
+            </div>
+          </div>
+
+          <!-- Contraseña -->
+          <div class="input-group">
+            <ion-item lines="none" class="custom-input-item">
+              <ion-icon name="lock-closed-outline" slot="start" class="input-icon"></ion-icon>
+              <ion-input
+                formControlName="password"
+                [type]="showPassword ? 'text' : 'password'"
+                label="Contraseña"
+                labelPlacement="floating"
+                placeholder="Mínimo 6 caracteres"
+                required>
+              </ion-input>
+              <ion-button fill="clear" slot="end" (click)="togglePasswordVisibility()" class="toggle-password-btn" aria-label="Mostrar u ocultar contraseña">
+                <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'" slot="icon-only"></ion-icon>
+              </ion-button>
+            </ion-item>
+            <div class="error-feedback" *ngIf="password?.invalid && (password?.dirty || password?.touched)">
+              <span *ngIf="password?.errors?.['required']">La contraseña es obligatoria.</span>
+              <span *ngIf="password?.errors?.['minlength']">Debe tener al menos 6 caracteres.</span>
+            </div>
+          </div>
+
+          <!-- Confirmar Contraseña -->
+          <div class="input-group">
+            <ion-item lines="none" class="custom-input-item">
+              <ion-icon name="shield-checkmark-outline" slot="start" class="input-icon"></ion-icon>
+              <ion-input
+                formControlName="confirmPassword"
+                [type]="showConfirmPassword ? 'text' : 'password'"
+                label="Confirmar Contraseña"
+                labelPlacement="floating"
+                placeholder="Repite tu contraseña"
+                required>
+              </ion-input>
+              <ion-button fill="clear" slot="end" (click)="toggleConfirmPasswordVisibility()" class="toggle-password-btn" aria-label="Mostrar u ocultar confirmación">
+                <ion-icon [name]="showConfirmPassword ? 'eye-off-outline' : 'eye-outline'" slot="icon-only"></ion-icon>
+              </ion-button>
+            </ion-item>
+            <div class="error-feedback" *ngIf="confirmPassword?.invalid && (confirmPassword?.dirty || confirmPassword?.touched)">
+              <span *ngIf="confirmPassword?.errors?.['required']">Debes confirmar tu contraseña.</span>
+              <span *ngIf="confirmPassword?.errors?.['passwordMismatch']">Las contraseñas no coinciden.</span>
+            </div>
+          </div>
+
+          <!-- Términos y Condiciones -->
+          <div class="terms-group">
+            <ion-item lines="none" class="checkbox-item">
+              <ion-checkbox formControlName="termsAccepted" slot="start" justify="start">
+                <span class="terms-text">Acepto los términos y la política de privacidad</span>
+              </ion-checkbox>
+            </ion-item>
+            <div class="error-feedback" *ngIf="termsAccepted?.invalid && (termsAccepted?.dirty || termsAccepted?.touched)">
+              <span>Debes aceptar los términos para registrarte.</span>
+            </div>
+          </div>
+
+          <!-- Botón de Registro -->
+          <ion-button
+            type="submit"
+            expand="block"
+            color="primary"
+            class="submit-button"
+            [disabled]="registerForm.invalid">
+            <ion-icon name="person-add-outline" slot="start"></ion-icon>
+            Crear Cuenta
+          </ion-button>
+
+        </form>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Enlace a Login -->
+    <div class="login-footer">
+      <p>
+        ¿Ya tienes una cuenta?
+        <a routerLink="/login" class="login-link">Inicia sesión</a>
+      </p>
+    </div>
+
+  </div>
+</ion-content>

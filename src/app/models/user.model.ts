@@ -1,0 +1,14 @@
+export interface User {
+  id?: string;
+  name: string;
+  email: string;
+  password?: string;
+  phone?: string;
+  createdAt?: Date | string;
+}
+
+export interface AuthSession {
+  user: User;
+  token?: string;
+  loginAt: Date | string;
+}

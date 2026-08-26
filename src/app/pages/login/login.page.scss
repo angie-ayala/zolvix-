@@ -1,0 +1,137 @@
+.login-content {
+  --background: #f4f6f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-container {
+  max-width: 440px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.brand-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+
+  .logo-wrapper {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 1rem;
+    background: var(--ion-color-primary, #3880ff);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 20px rgba(56, 128, 255, 0.25);
+
+    .brand-icon {
+      font-size: 38px;
+      color: #ffffff;
+    }
+  }
+
+  .brand-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--ion-color-dark, #222428);
+  }
+
+  .brand-subtitle {
+    font-size: 0.95rem;
+    color: var(--ion-color-medium, #92949c);
+    margin-top: 0.5rem;
+  }
+}
+
+.login-card {
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  background: #ffffff;
+
+  ion-card-content {
+    padding: 1.5rem 1.25rem;
+  }
+}
+
+.input-group {
+  margin-bottom: 1.2rem;
+}
+
+.custom-input-item {
+  --background: #f8fafc;
+  --border-radius: 12px;
+  --padding-start: 12px;
+  --inner-padding-end: 12px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  transition: all 0.2s ease-in-out;
+
+  &:focus-within {
+    border-color: var(--ion-color-primary, #3880ff);
+    --background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(56, 128, 255, 0.15);
+  }
+
+  .input-icon {
+    font-size: 1.25rem;
+    color: #64748b;
+    margin-right: 8px;
+  }
+
+  .toggle-password-btn {
+    --padding-start: 4px;
+    --padding-end: 4px;
+    color: #64748b;
+  }
+}
+
+.error-feedback {
+  margin-top: 0.35rem;
+  margin-left: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--ion-color-danger, #eb445a);
+  font-weight: 500;
+}
+
+.submit-button {
+  --border-radius: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+  height: 48px;
+  margin-top: 1.5rem;
+  box-shadow: 0 4px 12px rgba(56, 128, 255, 0.3);
+}
+
+.demo-box {
+  margin-top: 1rem;
+
+  ion-button {
+    --border-radius: 10px;
+    font-size: 0.82rem;
+  }
+}
+
+.register-footer {
+  text-align: center;
+  margin-top: 1.5rem;
+
+  p {
+    font-size: 0.95rem;
+    color: var(--ion-color-medium, #64748b);
+  }
+
+  .register-link {
+    color: var(--ion-color-primary, #3880ff);
+    font-weight: 600;
+    text-decoration: none;
+    margin-left: 0.3rem;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}

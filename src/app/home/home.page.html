@@ -1,16 +1,33 @@
 <ion-menu contentId="main-content">
   <ion-header>
     <ion-toolbar color="dark">
-      <ion-title>Menu</ion-title>
+      <ion-title>Menú</ion-title>
     </ion-toolbar>
   </ion-header>
   <ion-content class="ion-padding">
-    <ion-list>
-      <ion-item button><ion-icon name="home-outline"></ion-icon> Inicio</ion-item>
-      <ion-item button><ion-icon name="people"></ion-icon> Empleados</ion-item>
-      <ion-item button><ion-icon name="calculator"></ion-icon> Finanzas</ion-item>
-      <ion-item button><ion-icon name="briefcase"></ion-icon> Proyectos</ion-item>
-      <ion-item button><ion-icon name="heart"></ion-icon> Contacto</ion-item>
+    <div class="user-profile-summary" *ngIf="currentUser$ | async as user">
+      <ion-avatar class="menu-avatar">
+        <ion-icon name="person-circle-outline" class="avatar-icon"></ion-icon>
+      </ion-avatar>
+      <div class="user-details">
+        <h4 class="user-name">{{ user.name }}</h4>
+        <p class="user-email">{{ user.email }}</p>
+      </div>
+    </div>
+
+    <ion-list lines="none">
+      <ion-item button><ion-icon name="home-outline" slot="start"></ion-icon> Inicio</ion-item>
+      <ion-item button><ion-icon name="people-outline" slot="start"></ion-icon> Empleados</ion-item>
+      <ion-item button><ion-icon name="calculator-outline" slot="start"></ion-icon> Finanzas</ion-item>
+      <ion-item button><ion-icon name="briefcase-outline" slot="start"></ion-icon> Proyectos</ion-item>
+      <ion-item button><ion-icon name="mail-outline" slot="start"></ion-icon> Contacto</ion-item>
+      
+      <ion-item-divider class="menu-divider"></ion-item-divider>
+
+      <ion-item button (click)="onLogout()" color="danger" detail="false">
+        <ion-icon name="log-out-outline" slot="start"></ion-icon>
+        <ion-label>Cerrar Sesión</ion-label>
+      </ion-item>
     </ion-list>
   </ion-content>
 </ion-menu>
@@ -25,12 +42,23 @@
       <ion-title>
         Empresa App
       </ion-title>
+      <ion-buttons slot="end">
+        <ion-button (click)="onLogout()" fill="clear" color="light" title="Cerrar Sesión">
+          <ion-icon name="log-out-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-buttons>
     </ion-toolbar>
   </ion-header>
 
   <ion-content class="ion-padding">
-    <h1>Bienvenido a Empresa App!</h1>
-    <img src="assets/img/empresa.jpg" alt="Imagen de empresa" style="width: 300px; height: auto; margin-bottom: 10px; border-radius: 28px;">
+    <div class="welcome-banner" *ngIf="currentUser$ | async as user">
+      <h1 class="welcome-title">¡Hola, {{ user.name }}! 👋</h1>
+      <p class="welcome-subtitle">Bienvenido al panel de gestión de Empresa App</p>
+    </div>
+
+    <div class="hero-image-container">
+      <img src="assets/img/empresas.jpg" alt="Imagen de empresa" class="hero-image">
+    </div>
 
     <p>
       Esta aplicación está diseñada para ayudarte a gestionar tu empresa de manera eficiente. Aquí podrás encontrar
@@ -53,15 +81,14 @@
       </ion-card-content>
     </ion-card>
 
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title>Control de finanzas</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      Lleva un control detallado de tus ingresos y gastos, y genera reportes financieros para tu empresa.
-    </ion-card-content>
-  </ion-card>
-
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Control de finanzas</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        Lleva un control detallado de tus ingresos y gastos, y genera reportes financieros para tu empresa.
+      </ion-card-content>
+    </ion-card>
 
     <h3>Contacto</h3>
     <p>
@@ -72,19 +99,19 @@
     </p>
 
     <ion-button expand="block" color="primary">
-      <ion-icon name="logo-facebook"></ion-icon>
+      <ion-icon name="logo-facebook" slot="start"></ion-icon>
       Facebook
     </ion-button>
-        <ion-button expand="block" color="danger">
-      <ion-icon name="logo-instagram"></ion-icon>
+    <ion-button expand="block" color="danger">
+      <ion-icon name="logo-instagram" slot="start"></ion-icon>
       Instagram
     </ion-button>
   </ion-content>
 
   <ion-footer>
     <ion-toolbar color="dark">
-      <ion-title>&copy; 2026 Empresa App. Todos los derechos reservados.</ion-title>
+      <ion-title size="small">&copy; 2026 Empresa App. Todos los derechos reservados.</ion-title>
     </ion-toolbar>
   </ion-footer>
 
-</div>
+</div>
