@@ -1,86 +1,1003 @@
+// ============================================================================
+// ESTILOS BICI-MAP (PALETA ZOLVIX: AZUL #2563eb Y VERDE #10b981)
+// ============================================================================
+
+// Header & Branding
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 1.25rem;
+
+  ion-icon {
+    font-size: 1.5rem;
+  }
+}
+
+.gps-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #94a3b8;
+  margin-right: 6px;
+  transition: all 0.3s ease;
+
+  &.gps-active {
+    background-color: #10b981;
+    box-shadow: 0 0 8px #10b981;
+  }
+}
+
+.map-mode-banner {
+  background-color: #2563eb;
+  color: #ffffff;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  font-weight: 500;
+  animation: slideDown 0.3s ease-out;
+
+  ion-icon {
+    font-size: 1.2rem;
+    margin-right: 8px;
+  }
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(0); }
+}
+
+// Menú Lateral (Drawer)
+.menu-content {
+  --background: #ffffff;
+}
+
 .user-profile-summary {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 8px 18px;
-  border-bottom: 1px solid #e2e8f0;
-  margin-bottom: 12px;
+  gap: 14px;
+  padding: 12px 0 16px 0;
+  border-bottom: 1px solid #f1f5f9;
 
   .menu-avatar {
-    width: 44px;
-    height: 44px;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: #eff6ff;
+    color: #2563eb;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #e0e7ff;
-    border-radius: 50%;
-
-    .avatar-icon {
-      font-size: 40px;
-      color: #3880ff;
-    }
+    font-size: 28px;
   }
 
   .user-details {
-    overflow: hidden;
-
     .user-name {
-      font-size: 1rem;
-      font-weight: 600;
       margin: 0;
-      color: var(--ion-color-dark, #1e293b);
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      overflow: hidden;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #0f172a;
     }
-
     .user-email {
-      font-size: 0.8rem;
-      color: var(--ion-color-medium, #64748b);
-      margin: 2px 0 0;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      overflow: hidden;
+      margin: 2px 0 6px 0;
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+    .user-badge {
+      font-size: 0.72rem;
+      padding: 4px 8px;
+      border-radius: 6px;
     }
   }
 }
 
-.menu-divider {
-  margin: 1rem 0;
+.quick-stats-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 10px 8px;
+  margin: 16px 0;
+
+  .stat-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .stat-val {
+      font-weight: 700;
+      font-size: 1rem;
+      color: #2563eb;
+    }
+    .stat-lbl {
+      font-size: 0.72rem;
+      color: #64748b;
+    }
+  }
+
+  .stat-divider {
+    width: 1px;
+    height: 24px;
+    background: #e2e8f0;
+  }
 }
 
-.welcome-banner {
-  background: linear-gradient(135deg, #3880ff 0%, #1e40af 100%);
-  color: #ffffff;
-  padding: 1.25rem;
-  border-radius: 16px;
-  margin-bottom: 1.25rem;
-  box-shadow: 0 4px 15px rgba(56, 128, 255, 0.25);
+.menu-nav-list {
+  margin-top: 8px;
 
-  .welcome-title {
-    font-size: 1.4rem;
+  ion-item {
+    --border-radius: 10px;
+    margin-bottom: 4px;
+    font-weight: 500;
+    color: #334155;
+
+    &.active-item {
+      --background: #eff6ff;
+      --color: #2563eb;
+      font-weight: 700;
+    }
+  }
+}
+
+// ----------------------------------------------------------------------------
+// 1. MAPA Y ACCIONES FLOTANTES
+// ----------------------------------------------------------------------------
+.map-view-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+
+  &.hidden-tab {
+    display: none;
+  }
+}
+
+#biciMapContainer {
+  width: 100%;
+  height: 100%;
+  min-height: calc(100vh - 120px);
+  background-color: #e5e7eb;
+}
+
+.custom-fab-group {
+  margin-bottom: 75px;
+  margin-right: 12px;
+
+  .fab-btn {
+    margin-top: 10px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  }
+}
+
+// Tarjeta Flotante de Ruta Activa
+.floating-route-card {
+  position: absolute;
+  bottom: 20px;
+  left: 14px;
+  right: 14px;
+  max-width: 500px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(8px);
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  z-index: 1000;
+  animation: slideUp 0.3s ease-out;
+
+  .route-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .route-main-stat {
+      .route-distance {
+        font-size: 1.45rem;
+        font-weight: 800;
+        color: #10b981;
+        margin-right: 8px;
+      }
+      .route-duration {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #64748b;
+      }
+    }
+  }
+
+  .route-places {
+    margin: 12px 0;
+    padding: 10px;
+    background: #f8fafc;
+    border-radius: 10px;
+
+    .place-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+      .green-dot { background: #10b981; }
+      .red-dot { background: #ef4444; }
+
+      .place-txt {
+        font-size: 0.88rem;
+        font-weight: 500;
+        color: #1e293b;
+      }
+    }
+  }
+
+  .ride-tracker-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #eff6ff;
+    padding: 8px 12px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+
+    .timer-box {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #2563eb;
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .pulse-status {
+      font-size: 0.8rem;
+      color: #10b981;
+      font-weight: 600;
+      animation: pulseText 1.5s infinite;
+    }
+  }
+
+  .start-ride-btn {
+    --border-radius: 12px;
     font-weight: 700;
+    height: 44px;
+  }
+
+  .finish-ride-btn {
+    --border-radius: 12px;
+    font-weight: 700;
+    height: 44px;
+  }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(40px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes pulseText {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+// ----------------------------------------------------------------------------
+// 2. VISTA DE RUTAS
+// ----------------------------------------------------------------------------
+.section-title-box {
+  margin-bottom: 16px;
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #0f172a;
     margin: 0;
+  }
+
+  p {
+    font-size: 0.9rem;
+    color: #64748b;
+    margin: 4px 0 0 0;
+  }
+
+  .title-with-action {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.bici-card {
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f1f5f9;
+  background: #ffffff;
+  margin: 0 0 16px 0;
+}
+
+.route-form-card {
+  .route-input-group {
+    .input-icon-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #475569;
+
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+      }
+      .green-dot { background: #10b981; }
+      .red-dot { background: #ef4444; }
+    }
+
+    .bici-input-item {
+      --background: #f8fafc;
+      --border-radius: 10px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+    }
+  }
+
+  .destination-input-wrapper {
+    position: relative;
+  }
+
+  .search-spinner {
+    width: 18px;
+    height: 18px;
+    margin-left: 6px;
+  }
+
+  .search-suggestions-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    z-index: 1050;
+    margin-top: 4px;
+    max-height: 220px;
+    overflow-y: auto;
+
+    .suggestion-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      cursor: pointer;
+      transition: background 0.15s ease;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &:hover, &:active {
+        background: #f1f5f9;
+      }
+
+      .sugg-pin {
+        color: #2563eb;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+      }
+
+      .sugg-text {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+
+        .sugg-main {
+          font-size: 0.9rem;
+          font-weight: 700;
+          color: #0f172a;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .sugg-sub {
+          font-size: 0.75rem;
+          color: #64748b;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+    }
+  }
+
+  .map-select-btn {
+    --border-radius: 10px;
+    margin-top: 14px;
+    font-weight: 600;
+  }
+
+  .calculate-btn {
+    --border-radius: 10px;
+    margin-top: 10px;
+    font-weight: 700;
+    height: 48px;
+  }
+}
+
+.subsection-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 20px 0 12px 0;
+}
+
+.suggested-destinations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+
+  .suggested-card {
+    margin: 0;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+
+    .suggested-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+
+      .sugg-category {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #2563eb;
+      }
+    }
+
+    .sugg-name {
+      margin: 0 0 4px 0;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .sugg-desc {
+      margin: 0;
+      font-size: 0.8rem;
+      color: #64748b;
+    }
+  }
+}
+
+.eco-benefit-card {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  border-radius: 16px;
+
+  h4 {
+    margin: 0 0 12px 0;
+    font-weight: 700;
     color: #ffffff;
   }
 
-  .welcome-subtitle {
-    font-size: 0.88rem;
-    margin: 4px 0 0;
-    opacity: 0.9;
+  .eco-metrics {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 14px;
+
+    .eco-metric {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      .eco-val {
+        font-size: 1.4rem;
+        font-weight: 800;
+      }
+      .eco-lbl {
+        font-size: 0.8rem;
+        opacity: 0.9;
+      }
+    }
   }
 }
 
-.hero-image-container {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 1rem;
+// ----------------------------------------------------------------------------
+// 3. VISTA DE REPORTES
+// ----------------------------------------------------------------------------
+.custom-segment {
+  margin-bottom: 16px;
+  --background: #f1f5f9;
+}
 
-  .hero-image {
-    width: 100%;
-    max-width: 400px;
-    height: auto;
-    border-radius: 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+.reports-list {
+  .report-item-card {
+    .report-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+
+      .report-type-badge {
+        font-size: 0.8rem;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 8px;
+
+        &.badge-obra { background: #fef3c7; color: #b45309; }
+        &.badge-peligro { background: #fee2e2; color: #b91c1c; }
+        &.badge-cicloruta { background: #d1fae5; color: #047857; }
+        &.badge-congestion { background: #ede9fe; color: #6d28d9; }
+        &.badge-otro { background: #f1f5f9; color: #475569; }
+      }
+
+      .report-status-tag {
+        font-size: 0.72rem;
+        font-weight: 600;
+        text-transform: capitalize;
+        color: #10b981;
+      }
+    }
+
+    .report-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0 0 6px 0;
+    }
+
+    .report-desc {
+      font-size: 0.88rem;
+      color: #475569;
+      margin: 0 0 10px 0;
+      line-height: 1.4;
+    }
+
+    .report-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.8rem;
+      color: #64748b;
+      margin-bottom: 8px;
+
+      .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+    }
+
+    .report-footer {
+      display: flex;
+      justify-content: flex-end;
+      border-top: 1px solid #f1f5f9;
+      padding-top: 6px;
+    }
   }
+}
+
+// ----------------------------------------------------------------------------
+// 4. VISTA DE PUNTOS DE INTERÉS
+// ----------------------------------------------------------------------------
+.pois-list {
+  .poi-item-card {
+    .poi-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+
+      .poi-icon-box {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+
+        &.poi-icon-estacion { background: #eff6ff; }
+        &.poi-icon-taller { background: #fef3c7; }
+        &.poi-icon-parqueadero { background: #e0f2fe; }
+        &.poi-icon-descanso { background: #ecfdf5; }
+      }
+
+      .poi-title-info {
+        .poi-name {
+          margin: 0;
+          font-size: 1.05rem;
+          font-weight: 700;
+          color: #0f172a;
+        }
+
+        .poi-category-badge {
+          font-size: 0.72rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          color: #2563eb;
+        }
+      }
+    }
+
+    .poi-desc {
+      font-size: 0.88rem;
+      color: #475569;
+      margin: 0 0 10px 0;
+    }
+
+    .poi-info-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.8rem;
+      color: #64748b;
+      margin-bottom: 12px;
+
+      .poi-info-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+    }
+
+    .poi-actions-row {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      border-top: 1px solid #f1f5f9;
+      padding-top: 8px;
+
+      ion-button {
+        --border-radius: 8px;
+      }
+    }
+  }
+}
+
+// ----------------------------------------------------------------------------
+// 5. VISTA DE EVENTOS
+// ----------------------------------------------------------------------------
+.event-card {
+  .event-badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+
+    ion-badge {
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+  }
+
+  .event-title {
+    margin: 0 0 6px 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .event-desc {
+    font-size: 0.88rem;
+    color: #475569;
+    margin: 0 0 10px 0;
+    line-height: 1.4;
+  }
+
+  .event-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.82rem;
+    color: #334155;
+    margin-bottom: 12px;
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+  }
+
+  .event-btn {
+    --border-radius: 10px;
+    font-weight: 600;
+  }
+}
+
+// ----------------------------------------------------------------------------
+// 6. VISTA DE PERFIL Y ESTADÍSTICAS
+// ----------------------------------------------------------------------------
+.profile-header-card {
+  text-align: center;
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 16px;
+  margin-bottom: 20px;
+  border: 1px solid #f1f5f9;
+
+  .profile-avatar-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: #eff6ff;
+    color: #2563eb;
+    margin: 0 auto 12px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.2);
+  }
+
+  .profile-name {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #0f172a;
+  }
+
+  .profile-email {
+    margin: 4px 0 8px 0;
+    font-size: 0.9rem;
+    color: #64748b;
+  }
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+
+  .stat-card {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 14px;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+
+    .stat-icon-wrapper {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin-bottom: 8px;
+
+      &.blue-bg { background: #eff6ff; color: #2563eb; }
+      &.green-bg { background: #ecfdf5; color: #10b981; }
+      &.orange-bg { background: #fff7ed; color: #f97316; }
+      &.teal-bg { background: #f0fdfa; color: #0d9488; }
+    }
+
+    .stat-number {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-top: 2px;
+    }
+  }
+}
+
+.safety-tips-card {
+  ion-card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .tips-list {
+    margin: 0;
+    padding-left: 20px;
+    color: #475569;
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+}
+
+.logout-action-btn {
+  --border-radius: 12px;
+  margin-top: 20px;
+  font-weight: 600;
+  height: 46px;
+}
+
+// ----------------------------------------------------------------------------
+// BARRA DE NAVEGACIÓN INFERIOR (TABS)
+// ----------------------------------------------------------------------------
+.bici-footer-tabs {
+  ion-toolbar {
+    --border-width: 1px 0 0 0;
+    --border-color: #e2e8f0;
+    --background: #ffffff;
+  }
+
+  .tab-nav-bar {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 6px 0;
+
+    .nav-tab-btn {
+      background: none;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 6px 12px;
+      cursor: pointer;
+      color: #64748b;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+
+      ion-icon {
+        font-size: 1.35rem;
+      }
+
+      span {
+        font-size: 0.72rem;
+        font-weight: 600;
+      }
+
+      &.active {
+        color: #2563eb;
+
+        ion-icon {
+          transform: translateY(-2px);
+          color: #2563eb;
+        }
+
+        span {
+          font-weight: 700;
+          color: #2563eb;
+        }
+      }
+    }
+  }
+}
+
+// ----------------------------------------------------------------------------
+// MODAL DE CREAR REPORTE
+// ----------------------------------------------------------------------------
+.report-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 16px;
+  animation: fadeIn 0.2s ease;
+
+  .report-modal-card {
+    background: #ffffff;
+    width: 100%;
+    max-width: 480px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+    animation: scaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      background: #eff6ff;
+      border-bottom: 1px solid #dbeafe;
+
+      h3 {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #1e40af;
+      }
+
+      .close-modal-btn {
+        background: none;
+        border: none;
+        font-size: 1.2rem;
+        color: #64748b;
+        cursor: pointer;
+      }
+    }
+
+    .modal-body {
+      padding: 20px;
+
+      .form-group {
+        margin-bottom: 14px;
+
+        label {
+          display: block;
+          font-size: 0.82rem;
+          font-weight: 700;
+          color: #334155;
+          margin-bottom: 6px;
+        }
+
+        .custom-select,
+        .custom-modal-input,
+        .custom-modal-textarea {
+          border: 1.5px solid #e2e8f0;
+          border-radius: 10px;
+          background: #f8fafc;
+          padding: 8px 12px;
+          font-size: 0.9rem;
+        }
+
+        .selected-coords-txt {
+          margin: 0 0 6px 0;
+          font-size: 0.8rem;
+          color: #64748b;
+          font-family: monospace;
+        }
+      }
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 14px 20px;
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+
+      ion-button {
+        --border-radius: 10px;
+        font-weight: 600;
+      }
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }

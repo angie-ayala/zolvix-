@@ -1,27 +1,75 @@
+<!-- MENÚ LATERAL BICI-MAP -->
 <ion-menu contentId="main-content">
   <ion-header>
-    <ion-toolbar color="dark">
-      <ion-title>Menú</ion-title>
+    <ion-toolbar color="primary">
+      <ion-title>
+        <ion-icon name="bicycle" style="vertical-align: middle; margin-right: 6px;"></ion-icon>
+        BiciMap
+      </ion-title>
     </ion-toolbar>
   </ion-header>
-  <ion-content class="ion-padding">
+
+  <ion-content class="ion-padding menu-content">
     <div class="user-profile-summary" *ngIf="currentUser$ | async as user">
-      <ion-avatar class="menu-avatar">
-        <ion-icon name="person-circle-outline" class="avatar-icon"></ion-icon>
-      </ion-avatar>
+      <div class="menu-avatar">
+        <ion-icon name="person"></ion-icon>
+      </div>
       <div class="user-details">
         <h4 class="user-name">{{ user.name }}</h4>
         <p class="user-email">{{ user.email }}</p>
+        <ion-badge color="success" class="user-badge">Ciclista Activo</ion-badge>
       </div>
     </div>
 
-    <ion-list lines="none">
-      <ion-item button><ion-icon name="home-outline" slot="start"></ion-icon> Inicio</ion-item>
-      <ion-item button><ion-icon name="people-outline" slot="start"></ion-icon> Empleados</ion-item>
-      <ion-item button><ion-icon name="calculator-outline" slot="start"></ion-icon> Finanzas</ion-item>
-      <ion-item button><ion-icon name="briefcase-outline" slot="start"></ion-icon> Proyectos</ion-item>
-      <ion-item button><ion-icon name="mail-outline" slot="start"></ion-icon> Contacto</ion-item>
-      
+    <!-- Estadísticas Rápidas en Menú -->
+    <div class="quick-stats-box">
+      <div class="stat-col">
+        <span class="stat-val">{{ userStats.totalKm }} km</span>
+        <span class="stat-lbl">Pedaleados</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-col">
+        <span class="stat-val">{{ userStats.ridesCount }}</span>
+        <span class="stat-lbl">Recorridos</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-col">
+        <span class="stat-val">{{ userStats.reportsCount }}</span>
+        <span class="stat-lbl">Reportes</span>
+      </div>
+    </div>
+
+    <ion-list lines="none" class="menu-nav-list">
+      <ion-item button (click)="setTab('map')" [class.active-item]="activeTab === 'map'">
+        <ion-icon name="map-outline" slot="start" color="primary"></ion-icon>
+        <ion-label>Mapa y GPS</ion-label>
+      </ion-item>
+
+      <ion-item button (click)="setTab('routes')" [class.active-item]="activeTab === 'routes'">
+        <ion-icon name="navigate-outline" slot="start" color="primary"></ion-icon>
+        <ion-label>Calcular Ruta</ion-label>
+      </ion-item>
+
+      <ion-item button (click)="setTab('reports')" [class.active-item]="activeTab === 'reports'">
+        <ion-icon name="alert-circle-outline" slot="start" color="warning"></ion-icon>
+        <ion-label>Reportes Comunitarios</ion-label>
+      </ion-item>
+
+      <ion-item button (click)="setTab('places')" [class.active-item]="activeTab === 'places'">
+        <ion-icon name="storefront-outline" slot="start" color="secondary"></ion-icon>
+        <ion-label>Puntos de Interés</ion-label>
+      </ion-item>
+
+      <ion-item button (click)="setTab('events')" [class.active-item]="activeTab === 'events'">
+        <ion-icon name="calendar-outline" slot="start" color="tertiary"></ion-icon>
+        <ion-label>Eventos Ciclísticos</ion-label>
+      </ion-item>
+
+      <ion-item button (click)="setTab('profile')" [class.active-item]="activeTab === 'profile'">
+        <ion-icon name="person-outline" slot="start" color="medium"></ion-icon>
+        <ion-label>Mi Perfil y Estadísticas</ion-label>
+      </ion-item>
+
       <ion-item-divider class="menu-divider"></ion-item-divider>
 
       <ion-item button (click)="onLogout()" color="danger" detail="false">
@@ -32,86 +80,642 @@
   </ion-content>
 </ion-menu>
 
-
+<!-- PANTALLA PRINCIPAL -->
 <div class="ion-page" id="main-content">
+  
+  <!-- CABECERA SUPERIOR -->
   <ion-header>
-    <ion-toolbar color="dark">
+    <ion-toolbar color="primary">
       <ion-buttons slot="start">
         <ion-menu-button></ion-menu-button>
       </ion-buttons>
+
       <ion-title>
-        Empresa App
+        <div class="header-brand">
+          <ion-icon name="bicycle"></ion-icon>
+          <span>BiciMap</span>
+        </div>
       </ion-title>
+
       <ion-buttons slot="end">
-        <ion-button (click)="onLogout()" fill="clear" color="light" title="Cerrar Sesión">
-          <ion-icon name="log-out-outline" slot="icon-only"></ion-icon>
+        <!-- Indicador de GPS -->
+        <ion-button fill="clear" (click)="centerOnUser()" title="Centrar GPS">
+          <span class="gps-dot" [class.gps-active]="hasGpsPermission"></span>
+          <ion-icon name="locate-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+
+        <!-- Botón Rápido de Reporte -->
+        <ion-button fill="clear" (click)="openNewReportModal(true)" title="Crear Reporte">
+          <ion-icon name="add-circle-outline" slot="icon-only"></ion-icon>
         </ion-button>
       </ion-buttons>
     </ion-toolbar>
+
+    <!-- Barra de aviso si estamos en modo selección sobre el mapa -->
+    <div class="map-mode-banner" *ngIf="mapSelectionMode">
+      <ion-icon name="information-circle-outline"></ion-icon>
+      <span *ngIf="mapSelectionMode === 'destination'">Toca el mapa para fijar tu destino</span>
+      <span *ngIf="mapSelectionMode === 'report_location'">Toca el mapa para fijar el peligro</span>
+      <ion-button size="small" fill="clear" color="light" (click)="mapSelectionMode = null">
+        Cancelar
+      </ion-button>
+    </div>
   </ion-header>
 
-  <ion-content class="ion-padding">
-    <div class="welcome-banner" *ngIf="currentUser$ | async as user">
-      <h1 class="welcome-title">¡Hola, {{ user.name }}! 👋</h1>
-      <p class="welcome-subtitle">Bienvenido al panel de gestión de Empresa App</p>
+  <!-- CONTENIDO PRINCIPAL -->
+  <ion-content class="app-main-content">
+
+    <!-- ============================================================= -->
+    <!-- 1. VISTA DE MAPA INTERACTIVO -->
+    <!-- ============================================================= -->
+    <div class="map-view-wrapper" [class.hidden-tab]="activeTab !== 'map'">
+      <!-- Contenedor Leaflet -->
+      <div id="biciMapContainer"></div>
+
+      <!-- Botones flotantes sobre el mapa -->
+      <div class="map-floating-actions">
+        <ion-fab vertical="bottom" horizontal="end" slot="fixed" class="custom-fab-group">
+          <!-- Botón centrar en GPS -->
+          <ion-fab-button color="light" (click)="centerOnUser()" title="Centrar mi ubicación" class="fab-btn">
+            <ion-icon name="locate" color="primary"></ion-icon>
+          </ion-fab-button>
+
+          <!-- Botón crear reporte rápido -->
+          <ion-fab-button color="secondary" (click)="openNewReportModal(true)" title="Reportar peligro" class="fab-btn">
+            <ion-icon name="warning-outline"></ion-icon>
+          </ion-fab-button>
+        </ion-fab>
+      </div>
+
+      <!-- Tarjeta Flotante Informativa de Ruta Activa -->
+      <div class="floating-route-card" *ngIf="currentRoute">
+        <div class="route-card-header">
+          <div class="route-main-stat">
+            <span class="route-distance">{{ currentRoute.distanceKm }} km</span>
+            <span class="route-duration">~{{ currentRoute.durationMin }} min en bici</span>
+          </div>
+          <ion-button fill="clear" color="medium" size="small" (click)="clearRoute()">
+            <ion-icon name="close" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+
+        <div class="route-places">
+          <div class="place-row">
+            <span class="dot green-dot"></span>
+            <span class="place-txt">{{ currentRoute.originName }}</span>
+          </div>
+          <div class="place-row">
+            <span class="dot red-dot"></span>
+            <span class="place-txt">{{ currentRoute.destinationName }}</span>
+          </div>
+        </div>
+
+        <!-- Cronómetro de viaje en progreso -->
+        <div class="ride-tracker-bar" *ngIf="isRiding">
+          <div class="timer-box">
+            <ion-icon name="stopwatch-outline"></ion-icon>
+            <span>Tiempo: {{ formatRideTime(rideSeconds) }}</span>
+          </div>
+          <span class="pulse-status">Pedaleando...</span>
+        </div>
+
+        <div class="route-actions">
+          <ion-button
+            *ngIf="!isRiding"
+            expand="block"
+            color="secondary"
+            class="start-ride-btn"
+            (click)="startRide()">
+            <ion-icon name="bicycle-outline" slot="start"></ion-icon>
+            Iniciar Recorrido
+          </ion-button>
+
+          <ion-button
+            *ngIf="isRiding"
+            expand="block"
+            color="danger"
+            class="finish-ride-btn"
+            (click)="finishRide()">
+            <ion-icon name="checkmark-done-outline" slot="start"></ion-icon>
+            Finalizar Recorrido
+          </ion-button>
+        </div>
+      </div>
     </div>
 
-    <div class="hero-image-container">
-      <img src="assets/img/empresas.jpg" alt="Imagen de empresa" class="hero-image">
+    <!-- ============================================================= -->
+    <!-- 2. VISTA BUSCAR RUTA -->
+    <!-- ============================================================= -->
+    <div class="routes-view-container ion-padding" *ngIf="activeTab === 'routes'">
+      <div class="section-title-box">
+        <h2>Planificador de Rutas</h2>
+        <p>Encuentra el camino más seguro y eficiente para tu bicicleta</p>
+      </div>
+
+      <ion-card class="bici-card route-form-card">
+        <ion-card-content>
+          <div class="route-input-group">
+            <div class="input-icon-label">
+              <span class="dot green-dot"></span>
+              <ion-label>Origen</ion-label>
+            </div>
+            <ion-item lines="none" class="bici-input-item">
+              <ion-input [(ngModel)]="originLabel" readonly></ion-input>
+              <ion-icon name="navigate" slot="end" color="primary"></ion-icon>
+            </ion-item>
+          </div>
+
+          <div class="route-input-group destination-input-wrapper" style="margin-top: 14px;">
+            <div class="input-icon-label">
+              <span class="dot red-dot"></span>
+              <ion-label>Destino</ion-label>
+              <ion-spinner *ngIf="isSearchingDestination" name="dots" color="primary" class="search-spinner"></ion-spinner>
+            </div>
+            <ion-item lines="none" class="bici-input-item">
+              <ion-input
+                [(ngModel)]="destinationLabel"
+                (ionInput)="onDestinationInputChange()"
+                (keyup.enter)="calculateBiciRoute()"
+                placeholder="Escribe un lugar o barrio (ej. Venecia)"
+                [clearInput]="true"></ion-input>
+              <ion-icon name="search-outline" slot="end" color="medium"></ion-icon>
+            </ion-item>
+
+            <!-- Menú desplegable de sugerencias de lugares encontrados -->
+            <div class="search-suggestions-dropdown" *ngIf="showSuggestions && destinationSuggestions.length > 0">
+              <div
+                class="suggestion-item"
+                *ngFor="let s of destinationSuggestions"
+                (click)="selectSuggestion(s)">
+                <ion-icon name="location-sharp" class="sugg-pin"></ion-icon>
+                <div class="sugg-text">
+                  <span class="sugg-main">{{ s.name }}</span>
+                  <span class="sugg-sub">{{ s.address }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <ion-button
+            expand="block"
+            fill="outline"
+            color="primary"
+            class="map-select-btn"
+            (click)="enableMapDestinationSelection()">
+            <ion-icon name="pin-outline" slot="start"></ion-icon>
+            Elegir destino tocando el mapa
+          </ion-button>
+
+          <ion-button
+            expand="block"
+            color="primary"
+            class="calculate-btn"
+            [disabled]="(!destinationCoords && !destinationLabel.trim()) || isCalculatingRoute"
+            (click)="calculateBiciRoute()">
+            <ion-icon name="navigate" slot="start"></ion-icon>
+            {{ isCalculatingRoute ? 'Calculando Ruta...' : 'Calcular Ruta Ciclista' }}
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Destinos Frecuentes / Sugeridos -->
+      <h3 class="subsection-title">Destinos sugeridos para ciclistas</h3>
+      <div class="suggested-destinations-grid">
+        <ion-card
+          button
+          *ngFor="let p of pois"
+          (click)="routeToPoi(p)"
+          class="suggested-card">
+          <ion-card-content>
+            <div class="suggested-header">
+              <span class="sugg-category">{{ p.category }}</span>
+              <ion-icon name="arrow-forward-outline"></ion-icon>
+            </div>
+            <h4 class="sugg-name">{{ p.name }}</h4>
+            <p class="sugg-desc">{{ p.address }}</p>
+          </ion-card-content>
+        </ion-card>
+      </div>
+
+      <!-- Resumen Ecológico de Ruta -->
+      <ion-card class="eco-benefit-card" *ngIf="currentRoute">
+        <ion-card-content>
+          <h4>🌱 Impacto Positivo de tu Ruta</h4>
+          <div class="eco-metrics">
+            <div class="eco-metric">
+              <span class="eco-val">{{ (currentRoute.distanceKm * 0.16).toFixed(1) }} kg</span>
+              <span class="eco-lbl">CO2 evitado</span>
+            </div>
+            <div class="eco-metric">
+              <span class="eco-val">{{ Math.round(currentRoute.distanceKm * 32) }}</span>
+              <span class="eco-lbl">Calorías estimadas</span>
+            </div>
+          </div>
+          <ion-button expand="block" fill="outline" color="light" (click)="setTab('map')">
+            Ver trazado en el mapa
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
     </div>
 
-    <p>
-      Esta aplicación está diseñada para ayudarte a gestionar tu empresa de manera eficiente. Aquí podrás encontrar
-      herramientas para administrar tus empleados, controlar tus finanzas, y mantener un seguimiento de tus proyectos.
-    </p>
+    <!-- ============================================================= -->
+    <!-- 3. VISTA REPORTES COMUNITARIOS -->
+    <!-- ============================================================= -->
+    <div class="reports-view-container ion-padding" *ngIf="activeTab === 'reports'">
+      <div class="section-title-box">
+        <div class="title-with-action">
+          <div>
+            <h2>Reportes de la Vía</h2>
+            <p>Alertas viales generadas por la comunidad de ciclistas</p>
+          </div>
+          <ion-button color="secondary" size="small" (click)="openNewReportModal(true)">
+            <ion-icon name="add" slot="start"></ion-icon>
+            Reportar
+          </ion-button>
+        </div>
+      </div>
 
-    <h2>Características principales:</h2>
-    <ul>
-      <li>Administración de empleados</li>
-      <li>Control de finanzas</li>
-      <li>Seguimiento de proyectos</li>
-    </ul>
+      <!-- Segmento de Filtros -->
+      <ion-segment [(ngModel)]="reportFilter" (ionChange)="filterReports()" scrollable class="custom-segment">
+        <ion-segment-button value="todos">
+          <ion-label>Todos ({{ reports.length }})</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="obra">
+          <ion-label>🚧 Obras</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="peligro">
+          <ion-label>⚠️ Peligros</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="cicloruta">
+          <ion-label>🚲 Ciclorutas</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="congestion">
+          <ion-label>🚗 Tráfico</ion-label>
+        </ion-segment-button>
+      </ion-segment>
 
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>Administración de empleados</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        Gestiona la información de tus empleados, asigna tareas y controla su desempeño.
-      </ion-card-content>
-    </ion-card>
+      <!-- Lista de Reportes -->
+      <div class="reports-list">
+        <ion-card *ngFor="let r of filteredReports" class="bici-card report-item-card">
+          <ion-card-content>
+            <div class="report-header">
+              <span class="report-type-badge" [ngClass]="'badge-' + r.type">
+                <span *ngIf="r.type === 'obra'">🚧 Obra o cierre</span>
+                <span *ngIf="r.type === 'peligro'">⚠️ Peligro / Hueco</span>
+                <span *ngIf="r.type === 'cicloruta'">🚲 Estado cicloruta</span>
+                <span *ngIf="r.type === 'congestion'">🚗 Congestión vehicular</span>
+                <span *ngIf="r.type === 'otro'">📍 Otro</span>
+              </span>
+              <span class="report-status-tag">{{ r.status }}</span>
+            </div>
 
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>Control de finanzas</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        Lleva un control detallado de tus ingresos y gastos, y genera reportes financieros para tu empresa.
-      </ion-card-content>
-    </ion-card>
+            <h3 class="report-title">{{ r.title }}</h3>
+            <p class="report-desc">{{ r.description }}</p>
 
-    <h3>Contacto</h3>
-    <p>
-      Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos a través de nuestro correo electrónico:
-      <a href="mailto:info@empresaapp.com">
-        info@empresaapp.com
-      </a>
-    </p>
+            <div class="report-meta">
+              <div class="meta-item">
+                <ion-icon name="location-outline"></ion-icon>
+                <span>{{ r.address }}</span>
+              </div>
+              <div class="meta-item">
+                <ion-icon name="person-outline"></ion-icon>
+                <span>{{ r.userName }}</span>
+              </div>
+            </div>
 
-    <ion-button expand="block" color="primary">
-      <ion-icon name="logo-facebook" slot="start"></ion-icon>
-      Facebook
-    </ion-button>
-    <ion-button expand="block" color="danger">
-      <ion-icon name="logo-instagram" slot="start"></ion-icon>
-      Instagram
-    </ion-button>
+            <div class="report-footer">
+              <ion-button
+                fill="clear"
+                size="small"
+                color="primary"
+                (click)="focusOnLocation(r.lat, r.lng, r.title)">
+                <ion-icon name="map-outline" slot="start"></ion-icon>
+                Ver en el Mapa
+              </ion-button>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </div>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- 4. VISTA PUNTOS DE INTERÉS -->
+    <!-- ============================================================= -->
+    <div class="pois-view-container ion-padding" *ngIf="activeTab === 'places'">
+      <div class="section-title-box">
+        <h2>Puntos de Interés para Ciclistas</h2>
+        <p>Estaciones de bicis públicas, talleres, parqueaderos y zonas de hidratación</p>
+      </div>
+
+      <!-- Segmento de Filtros POI -->
+      <ion-segment [(ngModel)]="poiFilter" (ionChange)="filterPois()" scrollable class="custom-segment">
+        <ion-segment-button value="todos">
+          <ion-label>Todos</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="estacion">
+          <ion-label>🚲 Bicis Públicas</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="taller">
+          <ion-label>🔧 Talleres</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="parqueadero">
+          <ion-label>🅿️ Parqueaderos</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="descanso">
+          <ion-label>💧 Hidratación</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+
+      <div class="pois-list">
+        <ion-card *ngFor="let p of filteredPois" class="bici-card poi-item-card">
+          <ion-card-content>
+            <div class="poi-header">
+              <div class="poi-icon-box" [ngClass]="'poi-icon-' + p.category">
+                <span *ngIf="p.category === 'estacion'">🚲</span>
+                <span *ngIf="p.category === 'taller'">🔧</span>
+                <span *ngIf="p.category === 'parqueadero'">🅿️</span>
+                <span *ngIf="p.category === 'descanso'">💧</span>
+                <span *ngIf="p.category === 'punto_clave'">⭐</span>
+              </div>
+              <div class="poi-title-info">
+                <h3 class="poi-name">{{ p.name }}</h3>
+                <span class="poi-category-badge">{{ p.category }}</span>
+              </div>
+            </div>
+
+            <p class="poi-desc">{{ p.description }}</p>
+
+            <div class="poi-info-grid">
+              <div class="poi-info-item">
+                <ion-icon name="location-outline"></ion-icon>
+                <span>{{ p.address }}</span>
+              </div>
+              <div class="poi-info-item" *ngIf="p.schedule">
+                <ion-icon name="time-outline"></ion-icon>
+                <span>{{ p.schedule }}</span>
+              </div>
+              <div class="poi-info-item" *ngIf="p.phone">
+                <ion-icon name="call-outline"></ion-icon>
+                <span>{{ p.phone }}</span>
+              </div>
+            </div>
+
+            <div class="poi-actions-row">
+              <ion-button
+                fill="outline"
+                size="small"
+                color="primary"
+                (click)="focusOnLocation(p.lat, p.lng, p.name)">
+                <ion-icon name="map-outline" slot="start"></ion-icon>
+                Ver en Mapa
+              </ion-button>
+
+              <ion-button
+                fill="solid"
+                size="small"
+                color="secondary"
+                (click)="routeToPoi(p)">
+                <ion-icon name="navigate" slot="start"></ion-icon>
+                Trazar Ruta
+              </ion-button>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </div>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- 5. VISTA EVENTOS CICLÍSTICOS -->
+    <!-- ============================================================= -->
+    <div class="events-view-container ion-padding" *ngIf="activeTab === 'events'">
+      <div class="section-title-box">
+        <h2>Eventos y Ciclopaseos</h2>
+        <p>Rutas grupales, ciclo-talleres y actividades de la comunidad</p>
+      </div>
+
+      <div class="events-list">
+        <ion-card *ngFor="let ev of events" class="bici-card event-card">
+          <ion-card-content>
+            <div class="event-badge-row">
+              <ion-badge color="tertiary">{{ ev.date }} - {{ ev.time }}</ion-badge>
+              <ion-badge color="success" *ngIf="ev.distanceKm">{{ ev.distanceKm }} km</ion-badge>
+              <ion-badge color="medium">{{ ev.difficulty }}</ion-badge>
+            </div>
+
+            <h3 class="event-title">{{ ev.title }}</h3>
+            <p class="event-desc">{{ ev.description }}</p>
+
+            <div class="event-meta">
+              <div class="meta-item">
+                <ion-icon name="pin-outline" color="danger"></ion-icon>
+                <span><b>Punto de encuentro:</b> {{ ev.location }}</span>
+              </div>
+              <div class="meta-item">
+                <ion-icon name="people-outline" color="primary"></ion-icon>
+                <span><b>Organiza:</b> {{ ev.organizer }}</span>
+              </div>
+            </div>
+
+            <ion-button
+              expand="block"
+              fill="outline"
+              color="primary"
+              class="event-btn"
+              (click)="focusOnLocation(ev.lat, ev.lng, ev.title)">
+              <ion-icon name="location-outline" slot="start"></ion-icon>
+              Ver Punto de Encuentro en el Mapa
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
+      </div>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- 6. VISTA DE PERFIL Y ESTADÍSTICAS -->
+    <!-- ============================================================= -->
+    <div class="profile-view-container ion-padding" *ngIf="activeTab === 'profile'">
+      <div class="profile-header-card" *ngIf="currentUser$ | async as user">
+        <div class="profile-avatar-circle">
+          <ion-icon name="person"></ion-icon>
+        </div>
+        <h2 class="profile-name">{{ user.name }}</h2>
+        <p class="profile-email">{{ user.email }}</p>
+        <ion-badge color="primary">Miembro Zolvix Ciclista</ion-badge>
+      </div>
+
+      <!-- Cuadrícula de Métricas -->
+      <h3 class="subsection-title">Mis Estadísticas de Ciclismo</h3>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon-wrapper blue-bg">
+            <ion-icon name="bicycle-outline"></ion-icon>
+          </div>
+          <span class="stat-number">{{ userStats.ridesCount }}</span>
+          <span class="stat-label">Recorridos realizados</span>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrapper green-bg">
+            <ion-icon name="speedometer-outline"></ion-icon>
+          </div>
+          <span class="stat-number">{{ userStats.totalKm }} km</span>
+          <span class="stat-label">Distancia acumulada</span>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrapper orange-bg">
+            <ion-icon name="alert-circle-outline"></ion-icon>
+          </div>
+          <span class="stat-number">{{ userStats.reportsCount }}</span>
+          <span class="stat-label">Reportes colaborativos</span>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrapper teal-bg">
+            <ion-icon name="leaf-outline"></ion-icon>
+          </div>
+          <span class="stat-number">{{ (userStats.totalKm * 0.16).toFixed(1) }} kg</span>
+          <span class="stat-label">CO2 ahorrado al planeta</span>
+        </div>
+      </div>
+
+      <!-- Consejos de Seguridad Ciclista -->
+      <ion-card class="bici-card safety-tips-card">
+        <ion-card-header>
+          <ion-card-title>🛡️ Decálogo de Seguridad BiciMap</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ul class="tips-list">
+            <li>Usa siempre casco abrochado y chaleco reflectivo de noche.</li>
+            <li>Revisa la presión de tus llantas y frenos antes de salir.</li>
+            <li>Respeta el sentido de las ciclorutas y señales de tránsito.</li>
+            <li>Reporta peligros en BiciMap para alertar a otros ciclistas.</li>
+          </ul>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Botón de Cerrar Sesión -->
+      <ion-button expand="block" color="danger" fill="outline" class="logout-action-btn" (click)="onLogout()">
+        <ion-icon name="log-out-outline" slot="start"></ion-icon>
+        Cerrar Sesión
+      </ion-button>
+    </div>
+
   </ion-content>
 
-  <ion-footer>
-    <ion-toolbar color="dark">
-      <ion-title size="small">&copy; 2026 Empresa App. Todos los derechos reservados.</ion-title>
+  <!-- ============================================================= -->
+  <!-- BARRA DE NAVEGACIÓN INFERIOR (TABS DE ACCESO RÁPIDO) -->
+  <!-- ============================================================= -->
+  <ion-footer class="bici-footer-tabs">
+    <ion-toolbar color="light">
+      <div class="tab-nav-bar">
+        <button
+          type="button"
+          class="nav-tab-btn"
+          [class.active]="activeTab === 'map'"
+          (click)="setTab('map')">
+          <ion-icon name="map"></ion-icon>
+          <span>Mapa</span>
+        </button>
+
+        <button
+          type="button"
+          class="nav-tab-btn"
+          [class.active]="activeTab === 'routes'"
+          (click)="setTab('routes')">
+          <ion-icon name="navigate"></ion-icon>
+          <span>Rutas</span>
+        </button>
+
+        <button
+          type="button"
+          class="nav-tab-btn"
+          [class.active]="activeTab === 'reports'"
+          (click)="setTab('reports')">
+          <ion-icon name="alert-circle"></ion-icon>
+          <span>Reportar</span>
+        </button>
+
+        <button
+          type="button"
+          class="nav-tab-btn"
+          [class.active]="activeTab === 'places'"
+          (click)="setTab('places')">
+          <ion-icon name="storefront"></ion-icon>
+          <span>Puntos</span>
+        </button>
+
+        <button
+          type="button"
+          class="nav-tab-btn"
+          [class.active]="activeTab === 'profile'"
+          (click)="setTab('profile')">
+          <ion-icon name="person"></ion-icon>
+          <span>Perfil</span>
+        </button>
+      </div>
     </ion-toolbar>
   </ion-footer>
 
-</div>
+</div>
+
+<!-- ============================================================= -->
+<!-- MODAL PARA CREAR UN NUEVO REPORTE -->
+<!-- ============================================================= -->
+<div class="report-modal-backdrop" *ngIf="showReportModal">
+  <div class="report-modal-card">
+    <div class="modal-header">
+      <h3>📢 Reportar Problema en Ruta</h3>
+      <button class="close-modal-btn" (click)="showReportModal = false">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Tipo de problema:</label>
+        <ion-select [(ngModel)]="newReport.type" interface="action-sheet" class="custom-select">
+          <ion-select-option value="obra">🚧 Obra o Cierre de vía</ion-select-option>
+          <ion-select-option value="peligro">⚠️ Peligro / Hueco en vía</ion-select-option>
+          <ion-select-option value="cicloruta">🚲 Mal estado de cicloruta</ion-select-option>
+          <ion-select-option value="congestion">🚗 Invasión / Congestión vehicular</ion-select-option>
+          <ion-select-option value="otro">📍 Otro incidente</ion-select-option>
+        </ion-select>
+      </div>
+
+      <div class="form-group">
+        <label>Título breve:</label>
+        <ion-input
+          [(ngModel)]="newReport.title"
+          placeholder="Ej. Hueco hondo en carril bici"
+          class="custom-modal-input"></ion-input>
+      </div>
+
+      <div class="form-group">
+        <label>Descripción detallada:</label>
+        <ion-textarea
+          [(ngModel)]="newReport.description"
+          rows="3"
+          placeholder="Describe el estado de la vía para alertar a otros ciclistas..."
+          class="custom-modal-textarea"></ion-textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Ubicación:</label>
+        <p class="selected-coords-txt">{{ newReport.address || (newReport.lat + ', ' + newReport.lng) }}</p>
+        <ion-button fill="outline" size="small" expand="block" (click)="selectReportLocationOnMap()">
+          <ion-icon name="pin-outline" slot="start"></ion-icon>
+          Cambiar tocando en el mapa
+        </ion-button>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <ion-button fill="clear" color="medium" (click)="showReportModal = false">
+        Cancelar
+      </ion-button>
+      <ion-button color="secondary" (click)="submitReport()">
+        <ion-icon name="send-outline" slot="start"></ion-icon>
+        Publicar Reporte
+      </ion-button>
+    </div>
+  </div>
+</div>

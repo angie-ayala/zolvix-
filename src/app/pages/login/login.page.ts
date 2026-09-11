@@ -76,7 +76,7 @@ export class LoginPage implements OnInit {
 
   useDemoAccount() {
     this.loginForm.patchValue({
-      email: 'demo@empresa.com',
+      email: 'demo@bicimap.com',
       password: 'password123'
     });
   }

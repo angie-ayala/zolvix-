@@ -25,8 +25,8 @@ export class AuthService {
     if (existingUsers.length === 0) {
       const defaultUser: User = {
         id: 'usr_default_1',
-        name: 'Administrador Demo',
-        email: 'demo@empresa.com',
+        name: 'Ciclista Demo',
+        email: 'demo@bicimap.com',
         password: 'password123',
         phone: '3001234567',
         createdAt: new Date().toISOString()
@@ -88,7 +88,7 @@ export class AuthService {
 
     return of({
       success: true,
-      message: '¡Registro exitoso! Bienvenido a Empresa App.',
+      message: '¡Registro exitoso! Bienvenido a BiciMap.',
       user: createdUser
     }).pipe(delay(500)); // Simula latencia de red
   }

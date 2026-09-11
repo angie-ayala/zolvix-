@@ -35,3 +35,47 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import "@ionic/angular/css/palettes/dark.system.css";
+
+/* Leaflet Map Styles */
+@import "leaflet/dist/leaflet.css";
+
+/* Personalizaciones para marcadores e interfaz de mapa BiciMap */
+.leaflet-container {
+  font-family: var(--ion-font-family, inherit);
+  z-index: 1;
+}
+
+.bici-marker-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: white;
+  font-size: 16px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+  border: 2px solid #ffffff;
+}
+
+.pin-user {
+  background-color: #2563eb;
+  animation: pulse-ring 2s infinite;
+}
+
+.pin-obra { background-color: #f59e0b; }
+.pin-peligro { background-color: #ef4444; }
+.pin-cicloruta { background-color: #10b981; }
+.pin-congestion { background-color: #8b5cf6; }
+.pin-otro { background-color: #64748b; }
+.pin-poi { background-color: #0284c7; }
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 12px rgba(37, 99, 235, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);
+  }
+}
