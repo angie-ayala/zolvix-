@@ -1,0 +1,115 @@
+Aquí tienes la transcripción exacta del código de la imagen para la sección del cuerpo del chat (`chat-panel-body`):
+
+```html
+<!-- Cuerpo de mensajes -->
+<div class="chat-panel-body" #chatBody>
+
+  <!-- Bienvenida si no hay mensajes -->
+  <div class="chat-welcome" *ngIf="chatMessages.length === 0">
+    <ion-icon name="chatbubbles-outline"></ion-icon>
+    <p>¡Hola! 🚴 Soy <strong>BiciBot</strong>, tu asistente de BiciMap. ¿En qué te ayudo hoy?</p>
+  </div>
+
+  <!-- Sugerencias rápidas -->
+  <div class="chat-suggestions" *ngIf="chatMessages.length === 0">
+    <ion-chip *ngFor="let sug of chatSuggestions" outline color="primary" (click)="sendChatFromSuggestion(sug)">
+      <ion-label>{{ sug }}</ion-label>
+    </ion-chip>
+  </div>
+
+  <!-- Mensajes de conversación -->
+  <div *ngFor="let msg of chatMessages"
+       class="chat-msg"
+       [class.chat-msg-user]="msg.role === 'user'"
+       [class.chat-msg-bot]="msg.role === 'assistant'">
+    <div class="chat-msg-avatar" *ngIf="msg.role === 'assistant'">
+      <ion-icon name="bicycle"></ion-icon>
+    </div>
+    <div class="chat-msg-bubble">
+      <p>{{ msg.content }}</p>
+      <span class="chat-msg-time">{{ msg.timestamp | date:'shortTime' }}</span>
+    </div>
+  </div>
+
+</div>
+
+```
+
+---
+
+### Código HTML Completo de `bicibot.component.html` (Uniendo la imagen anterior y esta)
+
+Por si quieres copiar todo el archivo de una sola vez sin errores de integración:
+
+```html
+<!-- =================================================== -->
+<!-- BOTÓN FLOTANTE (FAB) - SIEMPRE VISIBLE ABAJO A LA DERECHA -->
+<!-- =================================================== -->
+<div class="bicibot-fab" (click)="toggleChat()" [class.fab-hidden]="isChatOpen">
+  <ion-icon name="chatbubbles"></ion-icon>
+  <span class="fab-badge" *ngIf="!isChatOpen">IA</span>
+</div>
+
+<!-- =================================================== -->
+<!-- PANEL DE CHAT OVERLAY (MODAL FLOTANTE) -->
+<!-- =================================================== -->
+<div class="bicibot-overlay" *ngIf="isChatOpen">
+  <div class="bicibot-chat-panel">
+
+    <!-- Header del chat -->
+    <div class="chat-panel-header">
+      <div class="chat-header-info">
+        <div class="chat-avatar">
+          <ion-icon name="bicycle"></ion-icon>
+        </div>
+        <div>
+          <h4>BiciBot IA</h4>
+          <span class="chat-status">🟢 En línea</span>
+        </div>
+      </div>
+      <div class="chat-header-actions">
+        <ion-button fill="clear" size="small" (click)="clearChat()" title="Limpiar chat">
+          <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" size="small" (click)="toggleChat()" title="Cerrar">
+          <ion-icon name="close" slot="icon-only"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
+
+    <!-- Cuerpo de mensajes -->
+    <div class="chat-panel-body" #chatBody>
+
+      <!-- Bienvenida si no hay mensajes -->
+      <div class="chat-welcome" *ngIf="chatMessages.length === 0">
+        <ion-icon name="chatbubbles-outline"></ion-icon>
+        <p>¡Hola! 🚴 Soy <strong>BiciBot</strong>, tu asistente de BiciMap. ¿En qué te ayudo hoy?</p>
+      </div>
+
+      <!-- Sugerencias rápidas -->
+      <div class="chat-suggestions" *ngIf="chatMessages.length === 0">
+        <ion-chip *ngFor="let sug of chatSuggestions" outline color="primary" (click)="sendChatFromSuggestion(sug)">
+          <ion-label>{{ sug }}</ion-label>
+        </ion-chip>
+      </div>
+
+      <!-- Mensajes de conversación -->
+      <div *ngFor="let msg of chatMessages"
+           class="chat-msg"
+           [class.chat-msg-user]="msg.role === 'user'"
+           [class.chat-msg-bot]="msg.role === 'assistant'">
+        <div class="chat-msg-avatar" *ngIf="msg.role === 'assistant'">
+          <ion-icon name="bicycle"></ion-icon>
+        </div>
+        <div class="chat-msg-bubble">
+          <p>{{ msg.content }}</p>
+          <span class="chat-msg-time">{{ msg.timestamp | date:'shortTime' }}</span>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+```
