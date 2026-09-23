@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
-import { ChatMessage } from '../../models/chat.model';
+import { ChatMessage } from '../models/chat.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -51,7 +51,7 @@ Reglas importantes:
 - Responde de forma clara y directa, evitando respuestas demasiado largas.
 - Ayuda al usuario a encontrar una ruta que se adapte a sus necesidades y recorrido.`;
 
-  constructor(private http: HttpClient) {}
+constructor(private http: HttpClient) {}
 
   /**
    * Envía un mensaje al asistente de IA y retorna la respuesta
@@ -77,7 +77,7 @@ Reglas importantes:
     const body = this.buildGeminiRequest(userMessage);
 
     return this.http.post<any>(`${this.GEMINI_URL}?key=${apiKey}`, body).pipe(
-      map(response => {
+      map((response: any) => {
         const text = response?.candidates?.[0]?.content?.parts?.[0]?.text
           || 'Lo siento, no pude generar una respuesta. Intenta de nuevo. 🚲';
 
@@ -91,8 +91,8 @@ Reglas importantes:
         this.conversationHistory.push(assistantMsg);
         return assistantMsg;
       }),
-      catchError(error => {
-        console.error('Error al contactar Gemini API:', error);
+   catchError((error: any) => {
+         console.error('Error al contactar Gemini API:', error);
         return this.getOfflineResponse(userMessage);
       })
     );
