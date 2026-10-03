@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LoadingController, ToastController } from '@ionic/angular';
-import { AuthService } from '../../services/auth.service';
+import { AuthService, AuthResponse } from '../../services/auth.service';
 
 /**
  * Validador personalizado para asegurar que la contraseña y confirmación coincidan
@@ -112,12 +112,12 @@ export class RegisterPage implements OnInit {
     await loading.present();
 
     this.authService.register({ name, email, phone, password }).subscribe({
-      next: async (res) => {
+      next: async (res: AuthResponse) => {
         await loading.dismiss();
         await this.showToast(res.message, 'success');
         this.router.navigate(['/home'], { replaceUrl: true });
       },
-      error: async (err) => {
+      error: async (err: Error) => {
         await loading.dismiss();
         const msg = err.message || 'Error al registrar la cuenta. Intenta de nuevo.';
         await this.showToast(msg, 'danger');

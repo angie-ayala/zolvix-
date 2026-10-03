@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LoadingController, ToastController } from '@ionic/angular';
-import { AuthService } from '../../services/auth.service';
+import { AuthService, AuthResponse } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -61,12 +61,12 @@ export class LoginPage implements OnInit {
     await loading.present();
 
     this.authService.login(email, password).subscribe({
-      next: async (res) => {
+      next: async (res: AuthResponse) => {
         await loading.dismiss();
         await this.showToast(res.message, 'success');
         this.router.navigate(['/home'], { replaceUrl: true });
       },
-      error: async (err) => {
+      error: async (err: Error) => {
         await loading.dismiss();
         const msg = err.message || 'Error al iniciar sesión. Intenta nuevamente.';
         await this.showToast(msg, 'danger');
