@@ -4,14 +4,15 @@
 
 export const environment = {
   production: false,
-  geminiApiKey: 'TU_API_KEY_AQUI'
-};
 
-/*
- * For easier debugging in development mode, you can import the following file
- * to ignore zone related error stack frames such as `zone.run`, `zoneDelegate.invokeTask`.
- *
- * This import should be commented out in production mode because it will have a negative impact
- * on performance if an error is thrown.
- */
-// import 'zone.js/plugins/zone-error';  // Included with Angular CLI.
+  // ── Groq API (GRATUITO) ────────────────────────────────────────────
+  // 1. Ve a https://console.groq.com → regístrate con Google (gratis)
+  // 2. API Keys → "Create API key"
+  // 3. La key empieza con "gsk_..."
+  groqApiKey: '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',
+
+  // ── Servidor propio de IA (opcional) ──────────────────────────────
+  // Si tienes un backend propio, pon la URL aquí.
+  // Debe recibir POST { message, history } y devolver { reply: "..." }
+  apiServerUrl: ''
+};

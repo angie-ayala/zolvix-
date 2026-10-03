@@ -1,0 +1,378 @@
+// =====================================================
+// BICIBOT – Asistente IA flotante
+// =====================================================
+
+// ── Variables ────────────────────────────────────────
+$blue:   #2563eb;
+$green:  #16a34a;
+$dark:   #1e293b;
+$light:  #f8fafc;
+$border: #e2e8f0;
+$muted:  #94a3b8;
+
+// Altura aproximada del footer de tabs de BiciMap
+$tabs-height: 64px;
+$offset-bottom: calc(#{$tabs-height} + 14px);
+
+// ── FAB button ───────────────────────────────────────
+.bicibot-fab {
+  position: fixed;
+  bottom: $offset-bottom;
+  right: 16px;
+  z-index: 9999;
+
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  border: none;
+  outline: none;
+  background: linear-gradient(135deg, $blue 0%, $green 100%);
+  box-shadow: 0 4px 18px rgba(37, 99, 235, 0.45), 0 2px 6px rgba(0,0,0,0.2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+
+  ion-icon {
+    font-size: 26px;
+    color: #fff;
+    pointer-events: none;
+  }
+
+  &:hover {
+    transform: scale(1.08);
+    box-shadow: 0 6px 26px rgba(37, 99, 235, 0.55);
+  }
+
+  &:active { transform: scale(0.93); }
+
+  // Anillo de pulso
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    border: 2px solid rgba(37, 99, 235, 0.35);
+    animation: botPulse 2.4s ease-out infinite;
+  }
+}
+
+.fab-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #f59e0b;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 8px;
+  letter-spacing: 0.4px;
+  line-height: 1.2;
+}
+
+@keyframes botPulse {
+  0%   { transform: scale(1);    opacity: .7; }
+  70%  { transform: scale(1.38); opacity: 0;  }
+  100% { transform: scale(1.38); opacity: 0;  }
+}
+
+// ── Panel chat ───────────────────────────────────────
+.bicibot-chat-panel {
+  position: fixed;
+  bottom: $offset-bottom;
+  right: 14px;
+  z-index: 9999;
+
+  width: 320px;
+  max-width: calc(100vw - 24px);
+  height: 465px;
+  max-height: calc(100svh - 130px);
+
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 14px 44px rgba(0,0,0,0.18), 0 2px 10px rgba(0,0,0,0.1);
+
+  animation: slideUp .26s cubic-bezier(.34,1.3,.64,1) both;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(28px) scale(.94); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);   }
+}
+
+// ── Header ───────────────────────────────────────────
+.chat-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 8px 12px 14px;
+  background: linear-gradient(135deg, #1d4ed8 0%, $green 100%);
+  flex-shrink: 0;
+}
+
+.chat-header-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  h4 {
+    margin: 0;
+    font-size: 14.5px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
+  }
+
+  .chat-status {
+    font-size: 10.5px;
+    color: rgba(255,255,255,0.8);
+  }
+}
+
+.chat-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+
+  ion-icon { font-size: 20px; color: #fff; }
+}
+
+.chat-header-actions {
+  display: flex;
+  gap: 2px;
+}
+
+.hdr-btn {
+  background: transparent;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.85);
+  transition: background .15s;
+
+  ion-icon { font-size: 18px; }
+
+  &:hover { background: rgba(255,255,255,0.15); color: #fff; }
+}
+
+.hdr-btn-close ion-icon { font-size: 20px; }
+
+// ── Cuerpo ───────────────────────────────────────────
+.chat-panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 12px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: $light;
+
+  &::-webkit-scrollbar       { width: 4px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+}
+
+// ── Bienvenida ───────────────────────────────────────
+.chat-welcome {
+  text-align: center;
+  padding: 6px 4px;
+
+  .welcome-icon {
+    font-size: 40px;
+    margin-bottom: 8px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 13.5px;
+    color: #475569;
+    line-height: 1.55;
+  }
+}
+
+// ── Sugerencias ──────────────────────────────────────
+.chat-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 2px 0;
+}
+
+.sug-chip {
+  background: #eff6ff;
+  color: $blue;
+  border: 1.5px solid #bfdbfe;
+  border-radius: 20px;
+  padding: 5px 11px;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background .15s, transform .12s;
+  outline: none;
+  line-height: 1.3;
+
+  &:hover  { background: #dbeafe; transform: scale(1.04); }
+  &:active { transform: scale(.96); }
+}
+
+// ── Mensajes ─────────────────────────────────────────
+.chat-msg {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.chat-msg-user {
+  flex-direction: row-reverse;
+
+  .chat-msg-bubble {
+    background: linear-gradient(135deg, $blue, #1d4ed8);
+    color: #fff;
+    border-radius: 16px 16px 4px 16px;
+
+    .chat-msg-time { color: rgba(255,255,255,0.65); }
+  }
+}
+
+.chat-msg-bot {
+  .chat-msg-bubble {
+    background: #fff;
+    color: $dark;
+    border-radius: 16px 16px 16px 4px;
+    border: 1px solid $border;
+    box-shadow: 0 1px 4px rgba(0,0,0,.07);
+  }
+}
+
+.chat-msg-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, $blue, $green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.chat-msg-bubble {
+  max-width: 220px;
+  padding: 9px 12px 5px;
+
+  p {
+    margin: 0 0 4px;
+    font-size: 13px;
+    line-height: 1.46;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+}
+
+.chat-msg-time {
+  display: block;
+  font-size: 10px;
+  color: $muted;
+  text-align: right;
+}
+
+// ── Typing dots ──────────────────────────────────────
+.typing-dots {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 12px 14px;
+  min-width: 56px;
+
+  span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: $muted;
+    animation: bounce 1.2s ease-in-out infinite;
+
+    &:nth-child(1) { animation-delay: 0s;   }
+    &:nth-child(2) { animation-delay: .2s;  }
+    &:nth-child(3) { animation-delay: .4s;  }
+  }
+}
+
+@keyframes bounce {
+  0%, 60%, 100% { transform: translateY(0);   background: #cbd5e1; }
+  30%            { transform: translateY(-7px); background: $blue;  }
+}
+
+// ── Footer / input ───────────────────────────────────
+.chat-panel-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 10px 12px;
+  background: #fff;
+  border-top: 1px solid $border;
+  flex-shrink: 0;
+}
+
+.chat-text-input {
+  flex: 1;
+  border: 1.5px solid $border;
+  border-radius: 22px;
+  padding: 9px 14px;
+  font-size: 13.5px;
+  font-family: inherit;
+  outline: none;
+  color: $dark;
+  background: $light;
+  transition: border-color .2s;
+  min-width: 0;
+
+  &::placeholder { color: $muted; }
+  &:focus         { border-color: $blue; background: #fff; }
+  &:disabled      { opacity: .55; cursor: not-allowed; }
+}
+
+.send-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  outline: none;
+  background: linear-gradient(135deg, $blue, $green);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform .15s, opacity .15s;
+  box-shadow: 0 2px 8px rgba(37,99,235,.35);
+
+  ion-icon { font-size: 18px; }
+
+  &:hover   { transform: scale(1.08); }
+  &:active  { transform: scale(.93); }
+  &:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
