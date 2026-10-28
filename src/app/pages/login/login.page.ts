@@ -74,13 +74,6 @@ export class LoginPage implements OnInit {
     });
   }
 
-  useDemoAccount() {
-    this.loginForm.patchValue({
-      email: 'demo@bicimap.com',
-      password: 'password123'
-    });
-  }
-
   private async showToast(message: string, color: 'success' | 'danger' | 'warning' = 'success') {
     const toast = await this.toastCtrl.create({
       message,

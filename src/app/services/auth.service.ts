@@ -1,6 +1,18 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { delay } from 'rxjs/operators';
+import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
+import {
+  Auth,
+  User as FirebaseUser,
+  createUserWithEmailAndPassword,
+  getAuth,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut,
+  updateProfile
+} from 'firebase/auth';
+import { environment } from '../../environments/environment';
 import { User } from '../models/user.model';
 
 export interface AuthResponse {
@@ -15,11 +27,6 @@ export interface RegisterData {
   password: string;
 }
 
-/**
- * Servicio de autenticación para BiciMap.
- * Gestiona el estado de sesión del usuario de forma local (localStorage)
- * hasta que se integre un backend de autenticación real.
- */
 @Injectable({
   providedIn: 'root'
 })
@@ -30,53 +37,61 @@ export class AuthService {
   private currentUserSubject: BehaviorSubject<User | null>;
   currentUser$: Observable<User | null>;
 
+  private firebaseApp: FirebaseApp | null = null;
+  private authInstance: Auth | null = null;
+
   constructor() {
+    const firebaseConfig = environment.firebase;
+    const hasFirebaseConfig = !!firebaseConfig &&
+      !!firebaseConfig.apiKey &&
+      !!firebaseConfig.authDomain &&
+      !!firebaseConfig.projectId &&
+      !!firebaseConfig.appId;
+
+    this.currentUserSubject = new BehaviorSubject<User | null>(null);
+    this.currentUser$ = this.currentUserSubject.asObservable();
+
+    if (hasFirebaseConfig) {
+      this.firebaseApp = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+      this.authInstance = getAuth(this.firebaseApp);
+      localStorage.removeItem(this.STORAGE_KEY);
+      this.bindFirebaseAuthState();
+      return;
+    }
+
     const storedUser = this.loadUserFromStorage();
     this.currentUserSubject = new BehaviorSubject<User | null>(storedUser);
     this.currentUser$ = this.currentUserSubject.asObservable();
   }
 
-  // -------------------------------------------------------------------------
-  // Estado de sesión
-  // -------------------------------------------------------------------------
-
-  /** Devuelve el usuario actualmente autenticado o null */
   getCurrentUser(): User | null {
     return this.currentUserSubject.getValue();
   }
 
-  /** True si hay un usuario autenticado */
   isAuthenticated(): boolean {
     return this.currentUserSubject.getValue() !== null;
   }
 
-  // -------------------------------------------------------------------------
-  // Autenticación
-  // -------------------------------------------------------------------------
-
-  /**
-   * Inicia sesión con email y contraseña.
-   * Retorna un Observable con el mensaje de éxito o lanza un error.
-   */
   login(email: string, password: string): Observable<AuthResponse> {
-    const users: Array<User & { password: string }> = this.getStoredUsers();
+    const normalizedEmail = email.trim();
 
-    // Cuenta demo predefinida
-    const demoEmail = 'demo@bicimap.com';
-    const demoPassword = 'password123';
-
-    if (email === demoEmail && password === demoPassword) {
-      const demoUser: User = {
-        uid: 'demo_user',
-        name: 'Ciclista Demo',
-        email: demoEmail,
-        photoURL: null as any
-      };
-      this.setCurrentUser(demoUser);
-      return of({ message: '¡Bienvenido de vuelta, Ciclista Demo! 🚲', user: demoUser }).pipe(delay(500));
+    if (this.authInstance) {
+      return new Observable<AuthResponse>((observer) => {
+        signInWithEmailAndPassword(this.authInstance!, normalizedEmail, password)
+          .then(async (credential) => {
+            const user = this.mapFirebaseUser(credential.user);
+            this.setCurrentUser(user);
+            observer.next({ message: `¡Bienvenido de vuelta, ${user.name}! 🚲`, user });
+            observer.complete();
+          })
+          .catch((error: any) => {
+            observer.error(new Error(this.getFirebaseAuthError(error)));
+          });
+      });
     }
 
-    const found = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+    const users: Array<User & { password: string }> = this.getStoredUsers();
+    const found = users.find(u => u.email.toLowerCase() === normalizedEmail.toLowerCase());
 
     if (!found) {
       return throwError(() => new Error('No existe una cuenta con ese correo electrónico.'));
@@ -91,14 +106,28 @@ export class AuthService {
     return of({ message: `¡Bienvenido de vuelta, ${user.name}! 🚲`, user: user as User }).pipe(delay(500));
   }
 
-  /**
-   * Registra una nueva cuenta de usuario.
-   * Retorna un Observable con el mensaje de éxito o lanza un error.
-   */
   register(data: RegisterData): Observable<AuthResponse> {
-    const users: Array<User & { password: string }> = this.getStoredUsers();
+    const normalizedEmail = data.email.trim();
 
-    const exists = users.some(u => u.email.toLowerCase() === data.email.toLowerCase());
+    if (this.authInstance) {
+      return new Observable<AuthResponse>((observer) => {
+        createUserWithEmailAndPassword(this.authInstance!, normalizedEmail, data.password)
+          .then(async (credential) => {
+            await updateProfile(credential.user, { displayName: data.name });
+            const firebaseUser = { ...credential.user, displayName: data.name } as FirebaseUser;
+            const user = this.mapFirebaseUser(firebaseUser);
+            this.setCurrentUser(user);
+            observer.next({ message: `¡Cuenta creada! Bienvenido a BiciMap, ${user.name}! 🚲`, user });
+            observer.complete();
+          })
+          .catch((error: any) => {
+            observer.error(new Error(this.getFirebaseAuthError(error)));
+          });
+      });
+    }
+
+    const users: Array<User & { password: string }> = this.getStoredUsers();
+    const exists = users.some(u => u.email.toLowerCase() === normalizedEmail.toLowerCase());
     if (exists) {
       return throwError(() => new Error('Ya existe una cuenta registrada con ese correo.'));
     }
@@ -106,7 +135,7 @@ export class AuthService {
     const newUser: User & { password: string } = {
       uid: 'user_' + Date.now(),
       name: data.name,
-      email: data.email,
+      email: normalizedEmail,
       phone: data.phone,
       photoURL: undefined,
       createdAt: new Date().toISOString(),
@@ -118,21 +147,64 @@ export class AuthService {
 
     const { password: _pw, ...user } = newUser;
     this.setCurrentUser(user as User);
-
     return of({ message: `¡Cuenta creada! Bienvenido a BiciMap, ${user.name}! 🚲`, user: user as User }).pipe(delay(600));
   }
 
-  /**
-   * Cierra la sesión del usuario actual
-   */
   logout(): void {
+    if (this.authInstance) {
+      signOut(this.authInstance).catch(() => undefined);
+    }
+
     this.currentUserSubject.next(null);
     localStorage.removeItem(this.STORAGE_KEY);
   }
 
-  // -------------------------------------------------------------------------
-  // Utilidades privadas de almacenamiento
-  // -------------------------------------------------------------------------
+  private bindFirebaseAuthState(): void {
+    if (!this.authInstance) {
+      return;
+    }
+
+    onAuthStateChanged(this.authInstance, (firebaseUser: FirebaseUser | null) => {
+      if (!firebaseUser) {
+        this.currentUserSubject.next(null);
+        localStorage.removeItem(this.STORAGE_KEY);
+        return;
+      }
+
+      const user = this.mapFirebaseUser(firebaseUser);
+      this.setCurrentUser(user);
+    });
+  }
+
+  private mapFirebaseUser(firebaseUser: FirebaseUser): User {
+    return {
+      uid: firebaseUser.uid,
+      name: firebaseUser.displayName || 'Ciclista',
+      email: firebaseUser.email || '',
+      phone: undefined,
+      photoURL: firebaseUser.photoURL || undefined,
+      createdAt: firebaseUser.metadata?.creationTime || new Date().toISOString()
+    };
+  }
+
+  private getFirebaseAuthError(error: any): string {
+    const code = error?.code || '';
+
+    switch (code) {
+      case 'auth/email-already-in-use':
+        return 'Ya existe una cuenta registrada con ese correo.';
+      case 'auth/invalid-email':
+        return 'El correo ingresado no es válido.';
+      case 'auth/weak-password':
+        return 'La contraseña es demasiado débil. Usa al menos 6 caracteres.';
+      case 'auth/user-not-found':
+        return 'No existe una cuenta con ese correo electrónico.';
+      case 'auth/wrong-password':
+        return 'Contraseña incorrecta. Intenta nuevamente.';
+      default:
+        return error?.message || 'Error de autenticación. Intenta nuevamente.';
+    }
+  }
 
   private setCurrentUser(user: User): void {
     this.currentUserSubject.next(user);

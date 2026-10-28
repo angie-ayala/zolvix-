@@ -5,14 +5,19 @@
 export const environment = {
   production: false,
 
-  // ── Groq API (GRATUITO) ────────────────────────────────────────────
-  // 1. Ve a https://console.groq.com → regístrate con Google (gratis)
-  // 2. API Keys → "Create API key"
-  // 3. La key empieza con "gsk_..."
+  firebase: {
+    apiKey: 'AIzaSyBGWMeGVRM-zDqNuhT3YQV89_5xOX_XU6U',
+    authDomain: 'zolvix-75e15.firebaseapp.com',
+    databaseURL: 'https://zolvix-75e15-default-rtdb.firebaseio.com',ñ
+    projectId: 'zolvix-75e15',
+    storageBucket: 'zolvix-75e15.firebasestorage.app',
+    messagingSenderId: '15928644304',
+    appId: '1:15928644304:web:ab9ba45179d815514844d5'
+  },
+
+  
   groqApiKey: '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',
 
-  // ── Servidor propio de IA (opcional) ──────────────────────────────
-  // Si tienes un backend propio, pon la URL aquí.
-  // Debe recibir POST { message, history } y devolver { reply: "..." }
+  
   apiServerUrl: ''
 };
