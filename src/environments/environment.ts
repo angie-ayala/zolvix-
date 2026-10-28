@@ -1,7 +1,3 @@
-// This file can be replaced during build by using the `fileReplacements` array.
-// `ng build` replaces `environment.ts` with `environment.prod.ts`.
-// The list of file replacements can be found in `angular.json`.
-
 export const environment = {
   production: false,
 
@@ -14,7 +10,6 @@ export const environment = {
     messagingSenderId: '15928644304',
     appId: '1:15928644304:web:ab9ba45179d815514844d5'
   },
-
   groqApiKey: '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',
   apiServerUrl: ''
 };
