@@ -132,6 +132,8 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
    * Carga los datos de reportes, puntos de interés, eventos y estadísticas
    */
   loadAppData() {
+    const userId = this.currentUser?.uid || 'guest';
+
     this.bicimapService.getReports().subscribe(reps => {
       this.reports = reps;
       this.filterReports();
@@ -148,7 +150,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
       this.events = evts;
     });
 
-    this.bicimapService.getUserStats().subscribe(stats => {
+    this.bicimapService.getUserStats(userId).subscribe(stats => {
       this.userStats = stats;
     });
   }
@@ -580,9 +582,11 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
    * Finaliza el recorrido y suma los kilómetros a las estadísticas
    */
   finishRide() {
+    const userId = this.currentUser?.uid || 'guest';
+
     if (this.currentRoute) {
-      this.bicimapService.recordCompletedRide(this.currentRoute.distanceKm);
-      this.bicimapService.getUserStats().subscribe(s => this.userStats = s);
+      this.bicimapService.recordCompletedRide(this.currentRoute.distanceKm, userId);
+      this.bicimapService.getUserStats(userId).subscribe(s => this.userStats = s);
     }
     this.isRiding = false;
     if (this.rideTimer) clearInterval(this.rideTimer);
@@ -727,13 +731,18 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
       userName: this.currentUser?.name || 'Ciclista Zolvix'
     };
 
-    this.bicimapService.addReport(reportData).subscribe(created => {
+    const userId = this.currentUser?.uid || 'guest';
+
+    this.bicimapService.addReport(reportData, userId).subscribe(created => {
       this.showReportModal = false;
       this.newReport.title = '';
       this.newReport.description = '';
       this.showToast('✅ ¡Reporte publicado! Gracias por ayudar a la comunidad ciclista.', 'success');
 
-      // Recargar datos y pintar en el mapa
+      this.bicimapService.getUserStats(userId).subscribe(stats => {
+        this.userStats = stats;
+      });
+
       this.loadAppData();
     });
   }

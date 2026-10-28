@@ -9,7 +9,7 @@ import { BiciReport, PointOfInterest, BiciEvent, BiciRoute, UserStats, ReportTyp
 })
 export class BicimapService {
   private readonly REPORTS_KEY = 'bicimap_reports';
-  private readonly STATS_KEY = 'bicimap_user_stats';
+  private readonly LEGACY_STATS_KEY = 'bicimap_user_stats';
   private readonly SAVED_ROUTES_KEY = 'bicimap_saved_routes';
 
   // Datos semilla de prueba iniciales para reportes
@@ -173,7 +173,7 @@ export class BicimapService {
     }
   }
 
-  public addReport(report: Omit<BiciReport, 'id' | 'createdAt' | 'status'>): Observable<BiciReport> {
+  public addReport(report: Omit<BiciReport, 'id' | 'createdAt' | 'status'>, userId: string = 'guest'): Observable<BiciReport> {
     const raw = localStorage.getItem(this.REPORTS_KEY);
     const reports: BiciReport[] = raw ? JSON.parse(raw) : [];
 
@@ -187,8 +187,7 @@ export class BicimapService {
     reports.unshift(newReport);
     localStorage.setItem(this.REPORTS_KEY, JSON.stringify(reports));
 
-    // Incrementar contador de reportes del usuario
-    this.incrementReportStat();
+    this.incrementReportStat(userId);
 
     return of(newReport);
   }
@@ -290,43 +289,61 @@ export class BicimapService {
   }
 
   // --- ESTADÍSTICAS DEL USUARIO ---
-  public getUserStats(userId: string = 'demo'): Observable<UserStats> {
-    const raw = localStorage.getItem(this.STATS_KEY);
+  private getStatsKey(userId: string = 'guest'): string {
+    return `bicimap_user_stats_${userId}`;
+  }
+
+  public getUserStats(userId: string = 'guest'): Observable<UserStats> {
+    const key = this.getStatsKey(userId);
+    const raw = localStorage.getItem(key);
     if (raw) {
       try {
-        return of(JSON.parse(raw));
+        const stats = JSON.parse(raw) as UserStats;
+        if (stats.userId !== userId) {
+          stats.userId = userId;
+          localStorage.setItem(key, JSON.stringify(stats));
+        }
+        return of(stats);
       } catch {
         // continuar
       }
     }
+
     const initialStats: UserStats = {
       userId,
-      ridesCount: 5,
-      totalKm: 42.8,
-      reportsCount: 3
+      ridesCount: 0,
+      totalKm: 0,
+      reportsCount: 0
     };
-    localStorage.setItem(this.STATS_KEY, JSON.stringify(initialStats));
+    localStorage.setItem(key, JSON.stringify(initialStats));
     return of(initialStats);
   }
 
-  public recordCompletedRide(km: number): void {
-    const raw = localStorage.getItem(this.STATS_KEY);
-    const stats: UserStats = raw ? JSON.parse(raw) : { userId: 'demo', ridesCount: 0, totalKm: 0, reportsCount: 0 };
+  public recordCompletedRide(km: number, userId: string = 'guest'): void {
+    const key = this.getStatsKey(userId);
+    const raw = localStorage.getItem(key);
+    const stats: UserStats = raw ? JSON.parse(raw) : { userId, ridesCount: 0, totalKm: 0, reportsCount: 0 };
+    stats.userId = userId;
     stats.ridesCount += 1;
     stats.totalKm = Math.round((stats.totalKm + km) * 10) / 10;
-    localStorage.setItem(this.STATS_KEY, JSON.stringify(stats));
+    localStorage.setItem(key, JSON.stringify(stats));
   }
 
-  private incrementReportStat(): void {
-    const raw = localStorage.getItem(this.STATS_KEY);
+  private incrementReportStat(userId: string = 'guest'): void {
+    const key = this.getStatsKey(userId);
+    const raw = localStorage.getItem(key);
     if (raw) {
       try {
         const stats: UserStats = JSON.parse(raw);
+        stats.userId = userId;
         stats.reportsCount += 1;
-        localStorage.setItem(this.STATS_KEY, JSON.stringify(stats));
+        localStorage.setItem(key, JSON.stringify(stats));
       } catch {
         // ignore
       }
+    } else {
+      const initialStats: UserStats = { userId, ridesCount: 0, totalKm: 0, reportsCount: 1 };
+      localStorage.setItem(key, JSON.stringify(initialStats));
     }
   }
 
